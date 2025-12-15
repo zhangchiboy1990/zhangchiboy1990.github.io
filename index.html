@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Campus Face Access Demo</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --border: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #22d3ee;
+      --pass: #16a34a;
+      --review: #fbbf24;
+      --deny: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at 20% 20%, rgba(34, 211, 238, 0.08), transparent 30%),
+        radial-gradient(circle at 80% 0%, rgba(99, 102, 241, 0.08), transparent 25%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header .title {
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    header .warning {
+      background: rgba(239, 68, 68, 0.1);
+      color: #fecdd3;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+    }
+
+    main {
+      padding: 24px;
+      max-width: 1200px;
+      margin: 0 auto 64px;
+    }
+
+    .intro {
+      margin-bottom: 18px;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card h2 span {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .section-subtitle {
+      color: var(--muted);
+      margin-bottom: 12px;
+      font-size: 0.95rem;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 6px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    input[type="text"],
+    input[type="file"],
+    select,
+    button,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus,
+    button:focus {
+      outline: 2px solid rgba(34, 211, 238, 0.2);
+      border-color: rgba(34, 211, 238, 0.3);
+    }
+
+    button {
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      background: linear-gradient(120deg, rgba(34, 211, 238, 0.16), rgba(59, 130, 246, 0.12));
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(120deg, rgba(34, 211, 238, 0.24), rgba(59, 130, 246, 0.18));
+    }
+
+    button.secondary {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    .preview {
+      margin: 10px 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px dashed var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 180px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .preview img,
+    .preview video {
+      max-width: 100%;
+      width: 100%;
+      display: block;
+    }
+
+    .students-list {
+      margin-top: 12px;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      max-height: 240px;
+      overflow: auto;
+    }
+
+    .student-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 8px;
+    }
+
+    .student-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      color: var(--muted);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-right: 8px;
+    }
+
+    .status-pass {
+      background: rgba(22, 163, 74, 0.15);
+      color: #bbf7d0;
+      border: 1px solid rgba(22, 163, 74, 0.35);
+    }
+
+    .status-review {
+      background: rgba(251, 191, 36, 0.12);
+      color: #fef3c7;
+      border: 1px solid rgba(251, 191, 36, 0.4);
+    }
+
+    .status-deny {
+      background: rgba(239, 68, 68, 0.12);
+      color: #fecdd3;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    .result-card {
+      margin-top: 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .result-card h3 {
+      margin: 0 0 6px;
+    }
+
+    .log-table {
+      width: 100%;
+      border-collapse: collapse;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .log-table th,
+    .log-table td {
+      border-bottom: 1px solid var(--border);
+      padding: 8px 6px;
+      text-align: left;
+    }
+
+    .helper-text {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 6px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      border-radius: 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">Campus Face Access · 教学演示</div>
+    <div class="warning">⚠️ 本系统仅用于教学演示，不用于真实门禁</div>
+  </header>
+
+  <main>
+    <div class="intro">MVP 级刷脸门禁 Demo：左侧登记学生，右侧刷脸核验，下方可查看与导出门禁日志。</div>
+    <div class="grid">
+      <section class="card" id="enrollment">
+        <h2>学生登记 <span>Enrollment</span></h2>
+        <p class="section-subtitle">录入学生基础信息与人脸特征，存储于浏览器 localStorage。</p>
+        <label for="name">姓名</label>
+        <input id="name" type="text" placeholder="如：张三" />
+
+        <label for="studentId">学号</label>
+        <input id="studentId" type="text" placeholder="如：2025001" />
+
+        <label for="className">班级</label>
+        <input id="className" type="text" placeholder="如：3A" />
+
+        <div class="row" style="margin-top: 10px;">
+          <button id="startEnrollCamera">打开摄像头拍照</button>
+          <label class="secondary" style="margin: 0;">
+            <input id="enrollUpload" type="file" accept="image/*" style="display:none;" />
+            <span class="tag" style="width: 100%; justify-content: center; cursor: pointer;">或 上传图片</span>
+          </label>
+        </div>
+
+        <div class="preview" id="enrollPreview">
+          <video id="enrollVideo" autoplay playsinline muted style="display:none;"></video>
+          <img id="enrollImage" alt="预览" style="display:none;" />
+          <span class="helper-text">等待拍照或上传图片</span>
+        </div>
+        <div class="row">
+          <button id="captureEnroll" class="secondary">拍照取样</button>
+          <button id="saveStudent">保存学生</button>
+        </div>
+
+        <div class="students-list" id="studentsList"></div>
+      </section>
+
+      <section class="card" id="verification">
+        <h2>门禁核验 <span>Verification</span></h2>
+        <p class="section-subtitle">刷脸比对登记库，按阈值输出通过 / 复核 / 拒绝。</p>
+
+        <div class="row" style="margin-top: 6px;">
+          <button id="startVerifyCamera">打开摄像头</button>
+          <label class="secondary" style="margin: 0;">
+            <input id="verifyUpload" type="file" accept="image/*" style="display:none;" />
+            <span class="tag" style="width: 100%; justify-content: center; cursor: pointer;">或 上传图片</span>
+          </label>
+        </div>
+
+        <div class="preview" id="verifyPreview">
+          <video id="verifyVideo" autoplay playsinline muted style="display:none;"></video>
+          <img id="verifyImage" alt="核验预览" style="display:none;" />
+          <span class="helper-text">等待拍照或上传图片</span>
+        </div>
+        <div class="row">
+          <button id="captureVerify" class="secondary">拍照</button>
+          <button id="startVerification">开始核验</button>
+        </div>
+
+        <div id="result"></div>
+        <div class="helper-text">阈值：≥85 通过｜70–84 复核｜<70 拒绝。未登记学生时禁用核验。</div>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top: 18px;">
+      <h2>门禁日志 <span>Access Logs</span></h2>
+      <p class="section-subtitle">记录每次核验结果，可导出 CSV 供课堂展示或复盘。</p>
+      <div class="row">
+        <button id="exportCsv" class="secondary">导出 CSV</button>
+        <button id="clearLogs" class="secondary">清空日志</button>
+      </div>
+      <div id="logsContainer" style="margin-top: 12px; overflow:auto; max-height: 260px;"></div>
+    </section>
+  </main>
+
+  <canvas id="hiddenCanvas" style="display:none;"></canvas>
+
+  <script>
+    const MODEL_URL = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights";
+    const STORAGE_KEYS = {
+      students: "cfa_students",
+      logs: "cfa_logs"
+    };
+
+    const state = {
+      students: [],
+      logs: [],
+      enrollStream: null,
+      verifyStream: null,
+      modelsLoaded: false,
+      loadingModels: false
+    };
+
+    const enrollVideo = document.getElementById("enrollVideo");
+    const verifyVideo = document.getElementById("verifyVideo");
+    const enrollImage = document.getElementById("enrollImage");
+    const verifyImage = document.getElementById("verifyImage");
+    const enrollPreview = document.getElementById("enrollPreview");
+    const verifyPreview = document.getElementById("verifyPreview");
+    const hiddenCanvas = document.getElementById("hiddenCanvas");
+
+    const startVerificationBtn = document.getElementById("startVerification");
+    const studentsListEl = document.getElementById("studentsList");
+    const logsContainer = document.getElementById("logsContainer");
+
+    function uuid(prefix = "id") {
+      return `${prefix}-${Math.random().toString(16).slice(2)}-${Date.now()}`;
+    }
+
+    function loadFromStorage(key, fallback = []) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (err) {
+        console.warn("读取 localStorage 失败", err);
+        return fallback;
+      }
+    }
+
+    function saveToStorage(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function formatTime(ts) {
+      return new Date(ts).toLocaleString();
+    }
+
+    async function ensureModels() {
+      if (state.modelsLoaded || state.loadingModels) return;
+      state.loadingModels = true;
+      await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+      ]);
+      state.modelsLoaded = true;
+    }
+
+    async function startCamera(targetVideoKey) {
+      const constraints = { video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } };
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        if (targetVideoKey === "enroll") {
+          if (state.enrollStream) stopStream(state.enrollStream);
+          state.enrollStream = stream;
+          enrollVideo.srcObject = stream;
+          enrollVideo.style.display = "block";
+          enrollImage.style.display = "none";
+          enrollPreview.querySelector(".helper-text")?.remove();
+        } else {
+          if (state.verifyStream) stopStream(state.verifyStream);
+          state.verifyStream = stream;
+          verifyVideo.srcObject = stream;
+          verifyVideo.style.display = "block";
+          verifyImage.style.display = "none";
+          verifyPreview.querySelector(".helper-text")?.remove();
+        }
+      } catch (err) {
+        alert("无法打开摄像头，请检查权限或改用上传图片");
+        console.error(err);
+      }
+    }
+
+    function stopStream(stream) {
+      stream.getTracks().forEach((t) => t.stop());
+    }
+
+    function captureFrame(videoEl, targetImage) {
+      if (!videoEl.srcObject) return null;
+      const trackSettings = videoEl.srcObject.getVideoTracks()[0].getSettings();
+      const width = trackSettings.width || 640;
+      const height = trackSettings.height || 480;
+      hiddenCanvas.width = width;
+      hiddenCanvas.height = height;
+      const ctx = hiddenCanvas.getContext("2d");
+      ctx.drawImage(videoEl, 0, 0, width, height);
+      const dataUrl = hiddenCanvas.toDataURL("image/png");
+      targetImage.src = dataUrl;
+      targetImage.style.display = "block";
+      videoEl.style.display = "none";
+      return dataUrl;
+    }
+
+    function handleUpload(inputEl, targetImage, previewEl, videoEl) {
+      const file = inputEl.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        targetImage.src = e.target.result;
+        targetImage.style.display = "block";
+        videoEl.style.display = "none";
+        previewEl.querySelector(".helper-text")?.remove();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function extractEmbedding(imageSrc) {
+      await ensureModels();
+      const img = await faceapi.fetchImage(imageSrc);
+      const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 });
+      const detections = await faceapi.detectAllFaces(img, options).withFaceLandmarks().withFaceDescriptors();
+      if (!detections.length) throw new Error("未识别到人脸");
+      if (detections.length > 1) throw new Error("请单人入镜");
+      return detections[0].descriptor;
+    }
+
+    async function saveStudent() {
+      const name = document.getElementById("name").value.trim();
+      const studentId = document.getElementById("studentId").value.trim();
+      const className = document.getElementById("className").value.trim();
+      const photo = enrollImage.src;
+
+      if (!name || !studentId || !className) {
+        alert("请填写姓名、学号、班级");
+        return;
+      }
+      if (!photo) {
+        alert("请先拍照或上传头像");
+        return;
+      }
+
+      try {
+        const descriptor = await extractEmbedding(photo);
+        const student = {
+          id: uuid("stu"),
+          name,
+          studentId,
+          className,
+          image: photo,
+          embedding: Array.from(descriptor)
+        };
+        state.students.push(student);
+        saveToStorage(STORAGE_KEYS.students, state.students);
+        renderStudents();
+        alert("学生已保存！");
+      } catch (err) {
+        alert(err.message || "保存失败");
+      }
+    }
+
+    function renderStudents() {
+      studentsListEl.innerHTML = "";
+      if (!state.students.length) {
+        studentsListEl.innerHTML = '<div class="helper-text">暂无学生登记，录入后可在此查看与删除</div>';
+      } else {
+        state.students.forEach((stu) => {
+          const div = document.createElement("div");
+          div.className = "student-item";
+          div.innerHTML = `
+            <div class="student-meta">
+              <strong>${stu.name} (${stu.studentId})</strong>
+              <span>${stu.className}</span>
+            </div>
+            <button class="secondary" data-id="${stu.id}">删除</button>
+          `;
+          div.querySelector("button").addEventListener("click", () => deleteStudent(stu.id));
+          studentsListEl.appendChild(div);
+        });
+      }
+      startVerificationBtn.disabled = state.students.length === 0;
+      startVerificationBtn.textContent = state.students.length ? "开始核验" : "请先登记学生";
+    }
+
+    function deleteStudent(id) {
+      state.students = state.students.filter((s) => s.id !== id);
+      saveToStorage(STORAGE_KEYS.students, state.students);
+      renderStudents();
+    }
+
+    function calcSimilarity(distance) {
+      const score = (1 - Math.min(distance, 1.2) / 1.2) * 100;
+      return Math.max(0, Math.min(100, Math.round(score)));
+    }
+
+    async function startVerification() {
+      if (!state.students.length) return;
+      const photo = verifyImage.src;
+      const videoVisible = verifyVideo.style.display !== "none" && verifyVideo.srcObject;
+      const imgSource = videoVisible ? captureFrame(verifyVideo, verifyImage) : photo;
+
+      if (!imgSource) {
+        alert("请先拍照或上传核验图片");
+        return;
+      }
+
+      try {
+        const descriptor = await extractEmbedding(imgSource);
+        const labeled = state.students.map((stu) => ({
+          student: stu,
+          distance: faceapi.euclideanDistance(new Float32Array(stu.embedding), descriptor)
+        }));
+
+        if (!labeled.length) {
+          alert("尚未登记学生");
+          return;
+        }
+
+        labeled.sort((a, b) => a.distance - b.distance);
+        const best = labeled[0];
+        const score = calcSimilarity(best.distance);
+
+        let result = "deny";
+        if (score >= 85) result = "pass";
+        else if (score >= 70) result = "review";
+
+        const matchedName = result === "deny" ? "未匹配" : best.student.name;
+        renderResult({ result, score, matchedStudent: matchedName });
+        addLog({ result, score, matchedStudent: matchedName });
+      } catch (err) {
+        alert(err.message || "核验失败");
+      }
+    }
+
+    function renderResult({ result, score, matchedStudent }) {
+      const resultEl = document.getElementById("result");
+      const statusClass = result === "pass" ? "status-pass" : result === "review" ? "status-review" : "status-deny";
+      const statusLabel = result === "pass" ? "通过" : result === "review" ? "需复核" : "拒绝";
+      resultEl.innerHTML = `
+        <div class="result-card">
+          <div class="status-badge ${statusClass}">${statusLabel}</div>
+          <h3>${matchedStudent}</h3>
+          <p class="helper-text">相似度：${score} / 100</p>
+          <p class="helper-text">阈值：≥85 通过，70–84 复核，<70 拒绝</p>
+        </div>
+      `;
+    }
+
+    function addLog(entry) {
+      const log = {
+        id: uuid("log"),
+        timestamp: new Date().toISOString(),
+        ...entry
+      };
+      state.logs.unshift(log);
+      saveToStorage(STORAGE_KEYS.logs, state.logs);
+      renderLogs();
+    }
+
+    function renderLogs() {
+      if (!state.logs.length) {
+        logsContainer.innerHTML = '<div class="helper-text">暂无门禁记录，核验后会自动生成日志</div>';
+        return;
+      }
+      const rows = state.logs
+        .map((log) => {
+          const badgeClass = log.result === "pass" ? "status-pass" : log.result === "review" ? "status-review" : "status-deny";
+          const label = log.result === "pass" ? "通过" : log.result === "review" ? "复核" : "拒绝";
+          return `
+            <tr>
+              <td>${formatTime(log.timestamp)}</td>
+              <td><span class="status-badge ${badgeClass}">${label}</span></td>
+              <td>${log.matchedStudent || "-"}</td>
+              <td>${log.score}</td>
+            </tr>
+          `;
+        })
+        .join("");
+      logsContainer.innerHTML = `
+        <table class="log-table">
+          <thead>
+            <tr>
+              <th>时间</th>
+              <th>结果</th>
+              <th>命中学生</th>
+              <th>分数</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    function exportCsv() {
+      if (!state.logs.length) {
+        alert("暂无日志可导出");
+        return;
+      }
+      const headers = ["时间", "结果", "命中学生", "相似度"];
+      const lines = state.logs.map((log) => [formatTime(log.timestamp), log.result, log.matchedStudent, log.score].join(","));
+      const csv = [headers.join(","), ...lines].join("\n");
+      const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "gate-logs.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function clearLogs() {
+      if (!confirm("确认清空所有日志？")) return;
+      state.logs = [];
+      saveToStorage(STORAGE_KEYS.logs, state.logs);
+      renderLogs();
+    }
+
+    function attachEvents() {
+      document.getElementById("startEnrollCamera").addEventListener("click", () => startCamera("enroll"));
+      document.getElementById("startVerifyCamera").addEventListener("click", () => startCamera("verify"));
+      document.getElementById("captureEnroll").addEventListener("click", () => captureFrame(enrollVideo, enrollImage));
+      document.getElementById("captureVerify").addEventListener("click", () => captureFrame(verifyVideo, verifyImage));
+      document.getElementById("saveStudent").addEventListener("click", saveStudent);
+      document.getElementById("startVerification").addEventListener("click", startVerification);
+      document.getElementById("clearLogs").addEventListener("click", clearLogs);
+      document.getElementById("exportCsv").addEventListener("click", exportCsv);
+      document.getElementById("enrollUpload").addEventListener("change", (e) => handleUpload(e.target, enrollImage, enrollPreview, enrollVideo));
+      document.getElementById("verifyUpload").addEventListener("change", (e) => handleUpload(e.target, verifyImage, verifyPreview, verifyVideo));
+    }
+
+    function loadState() {
+      state.students = loadFromStorage(STORAGE_KEYS.students, []);
+      state.logs = loadFromStorage(STORAGE_KEYS.logs, []);
+      renderStudents();
+      renderLogs();
+    }
+
+    function init() {
+      loadState();
+      attachEvents();
+      ensureModels().catch((err) => console.error("模型加载失败", err));
+    }
+
+    window.addEventListener("beforeunload", () => {
+      if (state.enrollStream) stopStream(state.enrollStream);
+      if (state.verifyStream) stopStream(state.verifyStream);
+    });
+
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>

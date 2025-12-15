@@ -1,37 +1,23 @@
-## Welcome to GitHub Pages
+# Campus Face Access Demo
 
-You can use the [editor on GitHub](https://github.com/zhangchiboy1990/zhangchiboy1990.github.io/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+单页 HTML 的校园门禁刷脸教学 Demo，支持学生登记、刷脸核验与门禁日志导出，所有数据存储在浏览器 `localStorage`。
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+## 快速开始
 
-### Markdown
+1. 克隆仓库后直接打开 `index.html` 即可运行，无需后端或额外依赖。
+2. 页面会自动加载 `face-api.js` 及模型文件（通过 CDN）。若浏览器提示摄像头权限，可改用图片上传。
+3. 左侧登记学生头像与基础信息，右侧刷脸核验，底部可导出门禁日志 CSV。
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+## 主要特性
 
-```markdown
-Syntax highlighted code block
+- 双栏布局：左侧登记、右侧核验，下方日志。
+- 人脸识别：`face-api.js` 提取特征，欧氏距离映射为 0–100 分相似度。
+- 阈值逻辑：≥85 通过，70–84 复核，<70 拒绝。
+- 本地存储：学生库、特征向量和日志全部保存在浏览器端，可清空或导出。
+- 演示提示：顶部固定警示，强调仅用于教学演示。
 
-# Header 1
-## Header 2
-### Header 3
+## 注意事项
 
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/zhangchiboy1990/zhangchiboy1990.github.io/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+- 模型文件经 CDN 加载，离线场景需改为本地路径。
+- 浏览器需支持 `getUserMedia` 和 `localStorage`。如摄像头不可用，请使用图片上传。
+- 本项目仅供教学演示，不具备生产级安防能力。
