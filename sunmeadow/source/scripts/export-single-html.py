@@ -5,7 +5,7 @@ import base64,json,re,sys
 root=Path(__file__).resolve().parent.parent
 dist=root/'dist'
 output=Path(sys.argv[1]) if len(sys.argv)>1 else root/'Sunmeadow.html'
-modules=['game.js','help.js','motion.js','rules.js','wordbook.js','assets/three.module.js','assets/GLTFLoader.js','assets/DRACOLoader.js','assets/BufferGeometryUtils.js','assets/SkeletonUtils.js']
+modules=['bridge.js','game.js','help.js','motion.js','rules.js','wordbook.js','assets/three.module.js','assets/GLTFLoader.js','assets/DRACOLoader.js','assets/BufferGeometryUtils.js','assets/SkeletonUtils.js']
 assets=['assets/pikachu-rigged.glb','assets/eevee.glb','assets/squirtle.glb','assets/caterpie.glb','assets/blastoise.glb','assets/draco/draco_wasm_wrapper.js','assets/draco/draco_decoder.wasm','assets/draco/draco_decoder.js']
 def url(mime,raw):return 'data:'+mime+';base64,'+base64.b64encode(raw).decode()
 imports={'three':url('text/javascript', (dist/'assets/three.module.js').read_bytes())}
