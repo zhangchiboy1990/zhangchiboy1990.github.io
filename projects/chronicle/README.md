@@ -14,3 +14,8 @@
 - [技术与开发计划](07-tech-roadmap.md)
 
 当前保存在现有公开仓库的子目录，未来可以迁移到独立私有仓库。现有故事设定多为提案，需与用户继续确认。
+
+## V0.3 新增
+- [通用世界系统：时间、交通、金钱](08-world-systems.md)
+- [数学知识与3D互动设计库](09-math-interactions.md)
+- [GitHub / Codex 同步工作流](10-codex-workflow.md)
