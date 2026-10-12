@@ -19,3 +19,8 @@
 - [通用世界系统：时间、交通、金钱](08-world-systems.md)
 - [数学知识与3D互动设计库](09-math-interactions.md)
 - [GitHub / Codex 同步工作流](10-codex-workflow.md)
+
+## V0.4 美术系统
+- [统一美术设定总纲](11-art-bible.md)
+- [3D角色设计与制作](12-character-3d.md)
+- [视觉一致性检查](13-visual-consistency-checklist.md)
